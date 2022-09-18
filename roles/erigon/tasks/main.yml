@@ -49,8 +49,8 @@
   become: yes
   become_user: "{{ erigon_user }}"
 
-- name: Build erigon and rpcdaemon
-  shell: "source /home/{{ erigon_user }}/.profile && make erigon rpcdaemon"
+- name: Build erigon
+  shell: "source /home/{{ erigon_user }}/.profile && make erigon"
   args:
     executable: /bin/bash
     chdir: "/home/{{ erigon_user }}/erigon"
@@ -67,12 +67,6 @@
     state: stopped
   when: erigon_service_full in ansible_facts.services
 
-- name: "stop {{ rpcdaemon_service }} service if exists"
-  systemd:
-    name: "{{ rpcdaemon_service }}"
-    state: stopped
-  when: rpcdaemon_service_full in ansible_facts.services
-
 - name: Create erigon Systemd file
   template:
     src: "files/erigon.service"
@@ -81,25 +75,9 @@
   become: yes
   become_user: root
 
-- name: Create rpcdaemon Systemd file
-  template:
-    src: "files/rpcdaemon.service"
-    dest: "/etc/systemd/system/{{ rpcdaemon_service_full }}"
-    mode: 0644
-  become: yes
-  become_user: root
-
-
 - name: enable and start erigon
   systemd:
     name: "{{ erigon_service }}"
-    state: started
-    daemon_reload: yes
-    enabled: yes
-
-- name: enable and start rpcdaemon
-  systemd:
-    name: "{{ rpcdaemon_service }}"
     state: started
     daemon_reload: yes
     enabled: yes
